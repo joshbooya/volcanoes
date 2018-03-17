@@ -1,0 +1,465 @@
+<!---Project 02 - Volcanoes
+  Brett Brandom, Joshua Bui, Caitlyn Ta -->
+<!-- Maps -->
+
+<!DOCTYPE html>
+<html lang="en-us">
+<meta charset="UTF-8">
+<head>
+  <title>Volcanoes | Eruptions Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS  -->
+  <!-- REFERENCE: https://getbootstrap.com/docs/4.0/getting-started/introduction/ -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link href="https://bootswatch.com/4/darkly/bootstrap.min.css" rel="stylesheet" type="text/css">
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+    integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+    crossorigin=""/>
+  <!-- Make sure you put this AFTER Leaflet's CSS -->
+   <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+   integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+   crossorigin=""></script>
+
+  <!-- Leaflet Parallax JS -->
+  <script src="{{ url_for('static', filename='leaflet-parallax.js') }}"></script>
+
+  <!-- Leaflet SliderControl CSS & JS -->
+  <script type="text/javascript" src="{{ url_for('static', filename='SliderControl.js') }}"></script>
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" type="text/css">
+
+
+  <!-- Marker Cluster JS & CSS -->
+  <script type="text/javascript" src="https://unpkg.com/leaflet.markercluster@1.0.3/dist/leaflet.markercluster.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.css">
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/leaflet.markercluster@1.0.3/dist/MarkerCluster.Default.css">
+  <!-- Leaflet-Parallax JS -->
+  <script type="text/javascript" src="{{ url_for('static', filename='leaflet-parallax.js') }}"></script>
+ <!-- Leaflet Heat JS -->
+  <script type="text/javascript" src="{{ url_for('static', filename='leaflet-heat.js') }}"></script>
+  <!-- <script type="text/javascript" src="{{ url_for('static', filename='leaflet-heatmap.js') }}"></script> -->
+  <!-- Our CSS -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='map_style.css') }}">
+    <!-- Leaflet Timeline CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='leaflet.timeline.min.css') }}">
+</head>
+<body>    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    
+    <!-- JS below in conflict with Slider Control JQUERY -->
+    <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='logic.js') }}"></script>
+
+<!-- Nav bar & Drop down menu -->
+  <font size=3>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="/scrape">Volcanoes</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation" style="">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+    
+        <div class="collapse navbar-collapse" id="navbarColor01">
+          <ul class="nav navbar-nav ml-auto">
+            <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Summary</a>
+            <div class="dropdown-menu dropdown-menu-right" style="position: absolute; transform: translate3d(0px, 42px, 0px); top: 0px; left: 0px; will-change: transform;">
+              <a class="dropdown-item" href="/process">Process</a>
+              <a class="dropdown-item" href="/climate">Climate</a>
+              <a class="dropdown-item" href="/eruption_map">Maps</a>
+              <a class="dropdown-item" href="/risk_assessment">Risk Assessment</a>
+              <a class="dropdown-item" href="/references">References</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="/scrape">Home</a>
+            </div>
+            </li>
+    
+            <li class="nav-item">
+              <a class="nav-link" href="/process">Process</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/climate">Climate</a>
+            <li class="nav-item">
+              <a class="nav-link" href="/eruption_map">Maps</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/risk_assessment">Risk Assessment</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/references">References</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+
+    <!-- MAPS V2 -->
+    <div class="jumbotron">
+      <h1 class="display-3">Interactive Volcanic Map</h1>
+      <p class="lead"></p>
+      <hr class="my-4">
+      <p></p>
+      <p class="lead">
+      </p>
+    </div>
+    <p style="margin-top: 2.5em"></p>
+    <div class="container-fluid">
+      <div class="row">
+          <div class="col-md-6"><img src=""></div>      
+          <div class="col-md-6"><font size="3">
+          </div>
+      </div>
+
+    </div>
+
+  <div class ='container' style="height: 750px; width:1200px" id="map"></div>
+  <!-- Include this library for mobile touch support  -->
+  <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script> -->
+  
+  <script type="text/javascript">
+    // Define map layers
+    var apikey = "pk.eyJ1Ijoiam9zaGJvb3lhIiwiYSI6ImNqZTZoeXVmczAwajcycXA4azd4ZjA4NHgifQ.AnTkhOwUFAP8ixRUKFqOmw";
+    var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token="
+        +apikey);
+        // outdoor = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v9/tiles/256/{z}/{x}/{y}?access_token="
+        // +apikey),
+        // streets = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/streets-v9/tiles/256/{z}/{x}/{y}?access_token="
+        // +apikey),
+        // dark = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?access_token="
+        // +apikey),
+        // light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token="
+        // +apikey);
+    
+    //// Adding colors to data/legend
+    function getColor(d) {
+      // return(d > 8.0) ? '#800026': //	Class: Great
+      //   (d > 7.0) ? '#bd0026': // Class: Major
+      //   (d > 6.0) ? '#e31a1c': // Class: Strong
+      //   (d > 5.0) ? '#fc4e2a': // Class: Moderate
+      //   (d > 4.0) ? '#fd8d3c': // Class: Light
+      //   (d > 3.0) ? '#feb24c': // Class: Minor
+      //   (d > 2.0) ? '#fed976': // Class: Minor
+      //   (d > 1.0) ? '#ffeda0': // Class: Minor
+      //   '#ffffcc'; // Class: Micro
+      // return(d > 8.0) ? '#FF0000': //	Class: Great
+      //     (d > 7.0) ? '#FF3300': // Class: Major
+      //     (d > 6.0) ? '#ff6600': // Class: Strong
+      //     (d > 5.0) ? '#FFCC00': // Class: Moderate
+      //     (d > 4.0) ? '#FFFF00': // Class: Light
+      //     (d > 3.0) ? '#ccff00': // Class: Minor
+      //     (d > 2.0) ? '#99ff00': // Class: Minor
+      //     (d > 1.0) ? '#33ff00': // Class: Minor
+      //     '#00FF00'; // Class: Micro
+      return(d > 8.0) ? '#E50600': //	Class: Great
+        (d > 7.0) ? '#E13300': // Class: Major
+        (d > 6.0) ? '#DE5F00': // Class: Strong
+        (d > 5.0) ? '#DB8900': // Class: Moderate
+        (d > 4.0) ? '#D8B200': // Class: Light
+        (d > 3.0) ? '#CFD500': // Class: Minor
+        (d > 2.0) ? '#A3D200': // Class: Minor
+        (d > 1.0) ? '#77CF00': // Class: Minor
+        '#4CCC00'; // Class: Micro
+    }
+    
+    function getNum(d) {
+      if ( ( isNaN(d) ) ) {
+        return 0.1;
+      } else {
+        return d;
+      }
+    }
+
+    function getMonth(d) {
+      if ( ( isNaN(d) ) ) {
+        return 0;
+      } else {
+        return d;
+      }
+    }
+
+    function getDay(d) {
+      if ( isNaN(d) ) {
+        return 1;
+      } else {
+        return d;
+      }
+    }
+
+    //// Sourcing Earthquake Data
+    // var url = "https://earthquake.usgs.gov/volcano/feed/v1.0/summary/all_month.geojson";
+    var url = `database/eruptions`;
+      d3.json(url, function(error, data) {
+
+        if (error) return console.warn(error);
+
+        console.log("data:", data);
+      // color reference http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=6
+      // Returning Ternary Statements
+      // Break down of colors paramenters from http://www.geo.mtu.edu/UPSeis/magnitude.html
+      
+      //// Adding Earthquake Data 
+        var latlngArray = [];
+        var veiArray = []; //true vei number for pop up info
+        var placeArray = [];
+        var timeArray = [];
+        var volcanoMarker = [];
+        var vei_radii = []; // this is the radii value to address NaN values
+        var nameArray = [];
+        var clusters = [];
+        var heatArray = [];
+        var heat = []
+        var year = []
+      
+        for (var i = 0; i < data.length; i++) {
+          var volcanoData = data[i];
+      
+          var lat = volcanoData.latitude;
+          var lng = volcanoData.longitude;
+          var vei = volcanoData.vei;
+          var place = volcanoData.country;
+          var name = volcanoData.volcano_name;
+          var yr = volcanoData.start_year;
+          var utcTime = new Date(volcanoData.start_year, 
+          getMonth(volcanoData.start_month), getDay(volcanoData.start_day));
+          var strUTCtime = utcTime.toDateString()
+          
+          // console.log("utcTime", strUTCtime)
+          // Latitude is in the range -90 (S) and +90 (N)
+          // Longitude is in the range -180 (W) and +180 (E)
+          if (lat, lng, vei, place, strUTCtime, year) {
+            latlngArray.push([lat, lng]);
+            nameArray.push(name);
+            veiArray.push(vei);
+            vei_radii.push(getNum(vei)+1)
+            placeArray.push(place);
+            timeArray.push(strUTCtime);
+            year.push(yr);
+
+            // heatArray.push([lat,lng, function (vei) {
+            //   if (vei === NaN){
+            //     return 0;
+            //   } else {
+            //     return (vei/8);
+            //   }
+            // }]);
+          }
+        }
+      // var minT = Math.min.apply(Math, timeArray);
+      // var maxT = Math.max.apply(Math, timeArray);
+      // console.log("min time", minT);
+      // console.log("timeArray", timeArray);
+        
+      var n = data.length; // sample size to assess
+      for (var j = 0; j < n; j++) {
+        heat.push(
+          L.heatLayer(latlngArray[j], {
+          radius: 20,
+          blur: 35
+        }));
+
+        volcanoMarker.push(
+          L.circleMarker(latlngArray[j], {
+            fillOpacity: 0.25,
+            color: getColor(vei_radii[j]),
+            fillColor: getColor(vei_radii[j]),
+            // Setting our circle's radius equal to the output of our markerSize function
+            // This will make our marker's size proportionate to its population
+            radius: (1.5 ** vei_radii[j]),
+            time: (timeArray[j])      
+          })
+          .bindPopup("<div class='popup_info'>Volcano Name: " + nameArray[j] + 
+            "<br>VEI: " + veiArray[j] + "<br>Country: " + placeArray[j] +
+            "<br>Year: " + year[j] +
+            "</div>")
+          .on('mouseover', function (e) {
+            this.openPopup();
+          })
+          .on('mouseout', function (e) {
+            this.closePopup();
+          })
+        );
+      }
+      console.log('heat', heat)
+      var volcanoes = L.layerGroup(volcanoMarker);
+      
+      //// Legend Control
+      var legend = L.control({position: 'bottomright'});
+      
+      legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'),
+            veiBin = [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+            labels = [', Effusive',', Gentle',', Explosive',
+              ', Catastrophic',', Cataclysmic',', Paroxysmic',
+              ', Colossal',', Super-colossal',', Mega-colossal'];
+      
+        div.innerHTML += '<b>Volcanic <br> Eruptions & VEI</b><hr>'  // don't forget the break tag
+      
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < veiBin.length; i++) {
+            div.innerHTML += 
+                '<i style="background:' + getColor(veiBin[i] + 1) + ' "></i> ' +
+                veiBin[i] + (veiBin[i + 1] ? '&ndash;' + veiBin[i + 1] + labels[i] + '<br>' : labels[i]) ;
+        }
+        return div;
+      };
+      
+      //////////////////////////////////////////////////////////////////////
+      var source = "https://raw.githubusercontent.com/joshbooya/tectonicplates/master/GeoJSON/PB2002_plates.json";
+      
+      d3.json(source, function(data) {
+      
+      function getStyle(feature) {
+        return {
+            weight: 4,
+            opacity: 0.25,
+            color: 'red',
+            dashArray: '5',
+            fillOpacity: 0,
+            fillColor: ''
+        };
+      }
+      
+      function highlightFeature(e) {
+          var layer = e.target;
+      
+          layer.setStyle({
+              weight: 8,
+              opacity: 1,
+              color: 'white',
+              dashArray: '1',
+              fillOpacity: 0
+          });
+      
+          if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+              layer.bringToFront();
+          }
+          info.update(layer.feature.properties);
+      }
+      
+      function resetHighlight(e) {
+        plates.resetStyle(e.target);
+        info.update();
+      }
+      
+      // function zoomToFeature(e) {
+      //     map.fitBounds(e.target.getBounds());
+      // }
+      
+      function onEachFeature(feature, layer) {
+          layer.on({
+              mouseover: highlightFeature,
+              mouseout: resetHighlight,
+              // click: zoomToFeature
+          });
+      }
+      
+      //// Plate info
+      var info = L.control({position: 'topright'});
+      
+      info.onAdd = function (map) {
+          this._div = L.DomUtil.create('div', 'plate_info'); // create a div with a class "info"
+          this.update();
+          return this._div;
+      };
+      
+      // method that we will use to update the control based on feature properties passed
+      info.update = function (props) {
+          this._div.innerHTML = (props ? '<b style="color:blue;">' + props.PlateName + '<b>'+ ' Plate': '<b style="color:purple;"> Hover over a plate </b>' );
+      };
+      
+      var plates = L.geoJson(data, {
+          style: getStyle
+          , onEachFeature: onEachFeature   
+      });
+      
+      var cntr = [9, 9]; // nigeria  
+      // var cntr = [36.00, -78.93]; // bermunda triangle
+      
+      //// Adding Map Layout
+
+
+      var myMap = L.map('map', {
+        center: cntr, // [ Lat, Lng] // Unites must be in DECIMAL COORDINATES
+        zoom: 2, // 3.3 to see the world
+        maxZoom: 12,
+        minZoom: 1,
+        // maxBounds: [ [-180, -85], [180, 85] ],
+        // maxBoundsViscosity: 0,
+        worldCopyJump: true,
+        layers: [satellite, volcanoes, plates] // default views
+      });
+      
+      var baseMaps = {
+        "Satellite": satellite,
+        // "Outdoor": outdoor, "Dark": dark, "Light": light
+      };
+      
+      var overlayMaps = {
+        "Volcanoes": volcanoes, 
+        "Plate Tectonics": plates
+        //, "Heat Map": heat
+      };
+      
+      // Adding slider for earthquake data
+      // var sliderControl = 
+      //   L.control.sliderControl({
+      //     position: "bottomright", 
+      //     layer: volcanoes, 
+      //     follow: 10});
+
+      // myMap.addControl(sliderControl);
+
+      // sliderControl.startSlider();
+
+// var markers = L.markerClusterGroup();
+// markers.addLayer(volcanoMarker);
+// myMap.addLayer(markers);
+
+      var imperial_scale = L.control.scale({position: 'bottomleft'})
+      // Add to map
+      L.control.layers(baseMaps, overlayMaps, {
+        position: 'topleft'
+        }).addTo(myMap);
+
+      imperial_scale.addTo(myMap);
+
+      legend.addTo(myMap);
+
+      info.addTo(myMap);
+
+      // heat.addTo(myMap);
+      });
+    });
+    </script>
+    <script type="text/javascript" src="{{ url_for('static', filename='leaflet.timeline.js') }}"></script>
+    <br>
+
+    <div class = "container">
+      <h1>VEI Table</h1>
+
+
+
+      <!-- {% block content %} -->
+      <div>
+      {{ volcanoes.vei_table_html|safe }}
+      </div>
+      <!-- {% endblock %} -->
+      <p>Much of the volcanic activities exist along the plate boundaries where breaks and movements along the underlying earth allow magma (molten rock) to surface.</p>
+    
+    </div>
+  </body>
+
+</html>

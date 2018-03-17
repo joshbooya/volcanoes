@@ -1,0 +1,144 @@
+<!---Project 02 - Volcanoes
+Brett Brandom, Joshua Bui, Caitlyn Ta -->
+<!-- Summary -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Volcanoes | Climate</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS  -->
+    <!-- REFERENCE: https://getbootstrap.com/docs/4.0/getting-started/introduction/ -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://bootswatch.com/4/darkly/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <!--D3-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.3/d3.min.js"></script>
+    <!--LaTeX-->
+    <script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+  </head>
+
+<!-- Nav bar & Drop down menu -->
+  <font size=3>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="/scrape">Volcanoes</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation" style="">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarColor01">
+      <ul class="nav navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Summary</a>
+        <div class="dropdown-menu dropdown-menu-right" style="position: absolute; transform: translate3d(0px, 42px, 0px); top: 0px; left: 0px; will-change: transform;">
+          <a class="dropdown-item" href="/process">Process</a>
+          <a class="dropdown-item" href="/climate">Climate</a>
+          <a class="dropdown-item" href="/eruption_map">Maps</a>
+          <a class="dropdown-item" href="/risk_assessment">Risk Assessment</a>
+          <a class="dropdown-item" href="/references">References</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="/scrape">Home</a>
+        </div>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/process">Process</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/climate">Climate</a>
+        <li class="nav-item">
+          <a class="nav-link" href="/eruption_map">Maps</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/risk_assessment">Risk Assessment</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/references">References</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
+<!-- CLIMATE -->
+<div class="jumbotron">
+  <h1 class="display-3">Analysis: Climate and Frequency of Eruptions</h1>
+  <p></p>
+<hr></hr>
+</div>
+
+
+<body>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    
+    <br>
+    <div class="container">
+      <h1>Global Temperatures</h1>
+      <div class="row">
+        <div class="col-sm-10">
+          <div id="plot"></div>
+        </div>
+          <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+          <script src = "{{url_for('static', filename='tempPlot.js')}}"></script>
+        <div class="col-sm-2">
+          <p>Select events to drop them from the graph</p>
+          <!--<div class="col-sm-2">-->
+          <select multiple='true' class='form-control form-control-sm'  id="selVolcano" onclick="optionChanged(this.value)" size="7" >
+            <option value="1,">Laki</option>
+            <option value="2,">Tambora</option>
+            <option value="3,">Cosiguina</option>
+            <option value="4,">Krakatoa</option>
+            <option value="5,">Agung</option>
+            <option value="6,">Chichon</option>
+            <option value="7,">Pinatubo</option>
+          </select>
+        </div>
+      </div>  
+    </div>
+    <div class="container">
+      <div class="row">
+      <br><br>
+          <p>Large volcanic eruptions have significant but short-term influence on global surface temperatures. If an eruptions is 
+          sufficiently powerful, it will release large amounts of sulfur dioxide into the stratosphere, where it will disperse
+          until it surrounds the entire globe. There the sulfur dioxide will combine with
+          water to form sulfuric acid aerosols. The sulfuric acid reflects incoming sunlight, cooling down the Earth's surface. The aerosols
+          will stay in the atmosphere for a few years before falling to the ground in the form of acid rain.
+          <br><br>
+            To illustrate the effect
+          of this phenomenon, we produced a plot of average global surface temperatures from 1750 to now. In addition we included a fit 
+          of the temperature to carbon dioxide levels in the atmosphere and sulfur emissions from significant volcanic events (which
+          we took from Berkeley Earth). We added functionality to remove certain events from the fit to see their effect. Try selecting a few
+          events from the list to the right of the plot. This will generate a third curve representing a fit adjusted to removing these
+          events from the data. We see that while an eruption can change global temperatures by more than a degree celsius (which is huge!),
+          within a few years the effect virtually disappears.</p>
+    <!--<p>What if I put this here? $$ \frac{1}{2\pi i} \oint_{C} \frac{f(z)}{z - z_0} = f(z_0) $$ </p>-->
+      </div>
+    </div>
+    
+    <br>
+    <div class="container" >  
+      <h1>Annual Eruptions</h1>
+      <iframe src="yearly_eruptions.html" frameborder='0' noresize='noresize' width="100%" height="500" style="background: #FFFFFF;"></iframe>
+    </div>
+    <div class="container">
+      <div class="row">
+        <br><br>
+        <p>When looking year over year, the global temperatures indicate an increasing temperature growth which correlates to the pattern of confirmed volcanic eruptions.
+          This, however, is not an indication of a direct cause as there are a few other factors to consider. 
+          <ul>        
+              <li>Population growth - remote areas are inhabited giving rise to more reports of volcanic activities.</li>
+              <li>Technological advancement - with increase communication and transmission of information knowledge of eruptions are immediately reported.</li>
+              <li>Retreat of Glaciers - pressure upon the earth decreases giving rise to increasing volcanic activities.</li>
+          </ul>
+          <br><br>
+        </p>
+      </div>
+    </div>
+</body>
+</html>

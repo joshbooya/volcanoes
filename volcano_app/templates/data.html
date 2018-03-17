@@ -1,0 +1,156 @@
+<!---Project 02 - Volcanoes
+Brett Brandom, Joshua Bui, Jonathan Orozco, Caitlyn Ta -->
+<!-- Summary -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Volcanoes | Risk</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.7.3/d3.min.js"></script>
+  <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">-->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+
+    <!-- Bootstrap CSS  -->
+    <!-- REFERENCE: https://getbootstrap.com/docs/4.0/getting-started/introduction/ -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+
+
+
+    <link href="https://bootswatch.com/4/darkly/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+
+
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+
+
+
+
+  </head>
+
+<!-- Nav bar & Drop down menu -->
+  <font size=3>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="/scrape">Volcanoes</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation" style="">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarColor01">
+      <ul class="nav navbar-nav ml-auto">
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Summary</a>
+        <div class="dropdown-menu dropdown-menu-right" style="position: absolute; transform: translate3d(0px, 42px, 0px); top: 0px; left: 0px; will-change: transform;">
+          <a class="dropdown-item" href="/process">Process</a>
+          <a class="dropdown-item" href="/climate">Climate</a>
+          <a class="dropdown-item" href="/eruption_map">Maps</a>
+          <a class="dropdown-item" href="/risk_assessment">Data</a>
+          <a class="dropdown-item" href="/references">References</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="/scrape">Home</a>
+        </div>
+        </li>
+
+        <li class="nav-item active">
+          <a class="nav-link" href="/process">Process</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/climate">Climate</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/eruption_map">Maps</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/risk_assessment">Data</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/references">References</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
+<!-- GRAPHS -->
+<div class="jumbotron">
+  <h1 class="display-3">Risk Assessment</h1>
+  <p></p>
+<hr></hr>
+</div>
+
+
+<body>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+      <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!--<script type="text/javascript" src="app.js"></script>-->
+<!--<script src = "{{url_for('static', filename='dtable.js')}}"></script>-->
+  <script src = "{{url_for('static', filename='dtable.js')}}"></script>
+    <script src = "{{url_for('static', filename='statsPlot.js')}}"></script>
+
+
+
+
+<div class="container">
+<div class="row">
+<div class="col-sm-12">
+
+<table id="risk" class="table table-dark"  style="width:100%">
+<thead>
+<tr>
+    <th>City</th>
+    <th>Latitude</th>
+    <th>Longitude</th>
+    <th>Population</th>
+    <th>Country</th>
+    <th>Risk</th>
+</tr>
+</thead>
+<tbody ></tbody>  
+</table>
+
+</div>
+</div>
+</div>
+
+
+
+
+<div class="container">
+<div class="row">
+<div class="col-sm-12">
+  <br><br>
+  <h4>Method</h4>
+<p>For a given city, we would like to come up with a single number metric to quantify the risk factor posed by volcanic events. In order to come up with a single number metric, we adopted the following principles:<br></p>
+<ul>
+  <li> Risk should depend on the order of magnitude of population, and increase with higher populations.</li>
+  <li>Risk should depend on the order of magnitude (in years) since the last eruption of the nearest volcano, decreasing with higher wait times.</li>
+  <li>Since the contents of an eruptions diffuse radially, risk should depend on the inverse square distance to the closest volcano.</li>
+</ul>
+<p>Adopting these principles, we used the following formula to determine the risk factor of a city: $$ \text{risk} = \log\left[ \frac{ \log P }{R^{2} \log T  } \right] ,$$ where P is population, T is time since the last eruption, and R is the distance to the closest volcano. The units of T and R are years and kilometers, respectively. To make the results a little bit more interpretable, we shifted and scaled the risk value above so that it takes values between 0 and 10. The table above contains a few thousand cities and their associated risk factor. Note that because we didn't use an exhaustive list of cities on Earth, applying the same scheme given here to another city not in our data may give a value less than zero or greater than 10.</p><br><br>
+<h4>Distribution of Risk Factors</h4>
+<p>Let's exame the distribution of risk factors in our data. The plot below shows a histogram of the values of risk. We fit the data to a normal distribution,
+a gamma distribution, and a kernel density estimate of the distribution. The gaussian fit performs rather poorly, while the gamma fit works quite well.<br></p>
+
+  <div id="plot"></div>
+
+
+<!--<p>What if I put this here? $$ \frac{1}{2\pi i} \oint_{C} \frac{f(z)}{z - z_0} = f(z_0) $$ </p>-->
+</div>
+</div>
+
+
+</body>
+
+</html>
