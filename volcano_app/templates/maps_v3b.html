@@ -1,0 +1,820 @@
+<!---Project 02 - Volcanoes
+  Brett Brandom, Joshua Bui, Caitlyn Ta -->
+<!-- Maps -->
+
+<!DOCTYPE html>
+<html lang="en-us">
+<meta charset="UTF-8">
+<head>
+  <title>Volcanoes | Maps</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS  -->
+  <!-- REFERENCE: https://getbootstrap.com/docs/4.0/getting-started/introduction/ -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <!-- <link href="https://bootswatch.com/4/darkly/bootstrap.min.css" rel="stylesheet" type="text/css"> -->
+  
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css"
+    integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
+    crossorigin=""/>
+  <!-- Make sure you put this AFTER Leaflet's CSS -->
+   <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"
+   integrity="sha512-/Nsx9X4HebavoBvEBuyp3I7od5tA0UzAxs+j83KgC8PU0kgB4XiK4Lfe4y4cgBtaRJQEIFCW+oC506aPT2L1zw=="
+   crossorigin=""></script>
+
+  <!-- Leaflet Parallax JS -->
+  <script src="{{ url_for('static', filename='leaflet-parallax.js') }}"></script>
+
+  <!-- Leaflet SliderControl CSS & JS -->
+  <script type="text/javascript" src="{{ url_for('static', filename='SliderControl.js') }}"></script>
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" type="text/css">
+
+  <!-- Leaflet-Parallax JS -->
+  <script type="text/javascript" src="{{ url_for('static', filename='leaflet-parallax.js') }}"></script>
+
+  <!-- Our CSS -->
+  <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='map_style.css') }}"> -->
+
+  <style> /* set the CSS */
+    body {
+      padding: 0;
+      margin: 0;
+    }
+
+    /* #map, */
+    body,
+    html {
+      height: 100%;
+      width: 100%;
+      position: relative;
+    }
+
+    #map {
+      height: 750px;
+      width: 900px;
+      padding: 20px;
+      margin-left: 20px;
+      /* margin-right: 50px; */
+      /* padding: 20px; */
+      position: relative;
+    }
+
+    .legend {
+      text-align: left;
+      line-height: 18px;
+      color: #555;
+    }
+
+    .legend i {
+      width: 20px;
+      height: 18px;
+      float: left;
+      margin-right: 10px;
+      opacity: 0.8;
+    }
+
+    .popup_info {
+      font: 14px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+    }
+
+    .plate_info {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+      /* color: rgb(0, 0, 0); */
+      color: #777;
+    }
+
+    .info {
+      padding: 6px 8px;
+      font: 14px/16px Arial, Helvetica, sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+
+    /* Prevents the legend from being misaligned */
+    .leaflet-control br {clear: both;}
+
+    .info h4 {
+      margin: 0 0 5px;
+      color: #777;
+    }
+    
+    .graph-title {
+      font-family: sans-serif;
+      font-size: 20px;
+      margin-left: 265px;
+      font-weight: lighter;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+    .zoom {
+      cursor: move;
+      fill: none;
+      pointer-events: all;
+    }
+    .no-mouse {
+        pointer-events: none;
+    }
+
+    /* #map {
+      height: 300px;
+      width: 600px;
+      padding: 20px;
+      margin-left: 140px;
+    } */
+
+    /* .legend {
+      position: absolute;
+      height: 80px;
+      width:250px;
+      background-image: url("legend.png");
+      background-repeat: no-repeat;
+      background-size: contain;
+      pointer-events: none;
+      z-index: 6;
+      border-radius: 10px;
+    } */
+    
+    .axis-label {
+      font-family: sans-serif;
+      font-size: 10px;
+    }
+    #tooltip {
+            position: absolute;
+            width: 150px;
+            height: auto;
+            padding: 10px;
+            background-color: white;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+            pointer-events: none;
+            opacity: 0.8;
+    }
+    #tooltip.hidden {
+            display: none;
+    }
+    #tooltip p {
+            margin: 0;
+            font-family: sans-serif;
+            font-size: 12px;
+            line-height: 14px;
+    }
+  </style>
+
+
+</head>
+<body>    
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    
+  <!-- JS below in conflict with Slider Control JQUERY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='logic.js') }}"></script>
+
+  <!-- map div -->
+  <div class="center" id="map"></div>
+
+
+  <div id="tooltip" class="hidden">
+    <p><strong>Earthquake Info</strong></p>
+    <p><span id="year">100</span></p>
+    <p><span id="vei">100</span></p>
+    <p><span id="volcano_name">100</span></p>
+    <p><span id="country">100</span></p>
+  </div>
+  <!-- Include this library for mobile touch support  -->
+  <!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script> -->
+  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+  <script type="text/javascript">
+
+    var mapw = d3.select("#map").style("width");
+    var maph = d3.select("#map").style("height") ;
+    var tooltipw = d3.select("#tooltip").style("width");
+    
+    // Margins & Figure Sizes
+    var svgWidth = window.innerWidth * 0.98;
+    var svgHeight = window.innerHeight  * 0.98;
+    var margin = {top: svgHeight * 0.09, right: svgWidth * 0.05, bottom: svgHeight * 0.2, left: 100};
+    var margin2 = {top: svgHeight * 0.09, right: svgWidth * 0.05, bottom: svgHeight * 0.2, left: 100};
+    var width = svgWidth - margin.left - margin.right;
+    var height = svgHeight - margin.top - margin.bottom;
+    var height2 = svgHeight - margin2.top - margin2.bottom;
+
+    var parseDate = d3.timeParse("%Y-%m-%d");
+
+    //Defining scales and axes for plot and brush plot
+    var xScale = d3.scaleTime()
+      .range([0, width]);
+    var yScale = d3.scaleLinear()
+      .range([height, 0]);
+    var navXScale = d3.scaleTime()
+      .range([0, width]);
+    var navYScale = d3.scaleLinear()
+      .range([height2, 0]);
+    var xAxis = d3.axisBottom(xScale);
+    var yAxis = d3.axisLeft(yScale);
+    var navXAxis = d3.axisBottom(navXScale);
+    var brush = d3.brushX()
+      .extent([[0, 0], [width, height2]])
+      .on("brush end", brushed);
+
+    // Defining tooltip with information for every point
+    var tooltip = d3.select("#tooltip")
+    
+    var svg = d3.select("body").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom);
+
+    svg.append("defs").append("clipPath")
+        .attr("id", "clip")
+      .append("rect")
+        .attr("width", width)
+        .attr("height", height);
+
+    var focus = svg.append("g")
+        .attr("class", "focus")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+    var context = svg.append("g")
+        .attr("class", "context")
+        .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+    //Defining scales for radius of points and the colors. Colors chosen from Color Brewer Palette
+    var scaleQuantRad = d3.scaleQuantile()
+      .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+      .range([0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    var scaleQuantColor = d3.scaleQuantile()
+      .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+      .range(["#ffffcc", "#ffeda0", "#fed976", 
+      "#feb24c", "#fd8d3c", "#fc4e2a", 
+      "#e31a1c", "#bd0026", "#800026"]);
+
+    svg.append("text")
+      .attr('class', "axis-label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 10)
+      .attr('x', -20)
+      .attr('text-anchor', "end")
+      .attr('dy', ".75em")
+      .text("Volcanic Explosivity Index (VEI)");
+    
+    svg.append("text")
+      .attr('class', "axis-label")
+      .attr("y", 230)
+      .attr('x', 880)
+      .attr('text-anchor', "end")
+      .attr('dy', ".75em")
+      .text("Date");
+
+    // Define map layers
+    var apikey = "pk.eyJ1Ijoiam9zaGJvb3lhIiwiYSI6ImNqZTZoeXVmczAwajcycXA4azd4ZjA4NHgifQ.AnTkhOwUFAP8ixRUKFqOmw";
+    var satellite = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token="
+      +apikey);
+    var outdoor = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/outdoors-v9/tiles/256/{z}/{x}/{y}?access_token="
+      +apikey);
+    var streets = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/streets-v9/tiles/256/{z}/{x}/{y}?access_token="
+      +apikey);
+    var dark = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/dark-v9/tiles/256/{z}/{x}/{y}?access_token="
+      +apikey);
+    var light = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/light-v9/tiles/256/{z}/{x}/{y}?access_token="
+      +apikey);
+    var volcanoes = []
+
+    var cntr = [9, 9]; // nigeria  
+      // var cntr = [36.00, -78.93]; // bermunda triangle
+    
+      //// Adding Map Layout
+    var mymap = L.map('map', {
+      center: cntr, // [ Lat, Lng] // Unites must be in DECIMAL COORDINATES
+      zoom: 2, // 3.3 to see the world
+      layers: [satellite] //, plates] // default views
+    });
+    // // Creating the svg call
+    // mapLink.addTo(mymap);
+    var svg_map = d3.select(mymap.getPanes().overlayPane).append("svg");
+    var g = svg_map.append("g").attr("class", "leaflet-zoom-hide");
+
+    //// Adding colors to data/legend
+    function getColor(d) {
+      return(d > 8.0) ? '#800026': //	Class: Great
+        (d > 7.0) ? '#bd0026': // Class: Major
+        (d > 6.0) ? '#e31a1c': // Class: Strong
+        (d > 5.0) ? '#fc4e2a': // Class: Moderate
+        (d > 4.0) ? '#fd8d3c': // Class: Light
+        (d > 3.0) ? '#feb24c': // Class: Minor
+        (d > 2.0) ? '#fed976': // Class: Minor
+        (d > 1.0) ? '#ffeda0': // Class: Minor
+        '#ffffcc'; // Class: Micro
+    }
+    
+    function getNum(d) {
+      if ( ( isNaN(d) ) ) {
+        return 0.1;
+      } else {
+        return d;
+      }
+    }
+
+    function getMonth(d) {
+      if ( ( isNaN(d) ) ) {
+        return 0;
+      } else {
+        return d;
+      }
+    }
+
+    function getDay(d) {
+      if ( isNaN(d) ) {
+        return 1;
+      } else {
+        return d;
+      }
+    }
+
+      //// Sourcing Earthquake Data
+      // var url = "https://earthquake.usgs.gov/volcano/feed/v1.0/summary/all_month.geojson";
+      var url = `database/eruptions`;
+      d3.json(url, function(error, data) {
+
+        if (error) return console.warn(error);
+
+        console.log("data:", data);
+      // color reference http://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=6
+      // Returning Ternary Statements
+      // Break down of colors paramenters from http://www.geo.mtu.edu/UPSeis/magnitude.html
+      
+        //1. Working with the map
+        //Projecting Lat/long points to our map
+        function projectPoint(x, y) {
+          var point = mymap.latLngToLayerPoint(new L.LatLng(y, x));
+          this.stream.point(point.x, point.y);
+        }
+
+        //Transforming to the specific projection
+        var transform = d3.geoTransform({point: projectPoint});
+        var d3path = d3.geoPath().projection(transform);
+        
+        // similar to projectPoint this function converts lat/long to
+        // svg coordinates except that it accepts a point from our
+        // GeoJSON
+        function applyLatLngToLayer(d) {
+          var y = d.latitude
+          var x = d.longitude
+          return mymap.latLngToLayerPoint(new L.LatLng(y, x))
+        }
+        var feature = g.selectAll("circle")
+          .data(data)
+          .enter().append("circle")
+          .attr('class', "mapcircle")
+          .attr('opacity', 0.4 )
+        //Using helper function to plot points
+        plot_points(feature)
+          feature
+            .on("mouseover", function(d) {
+              selection = d3.select(this)
+                .attr('r', 15)
+                //Update the tooltip position and value
+                tool_tip_show(parseInt(mapw) - parseInt(tooltipw) + 160 + "px", 55 + "px", d)
+                //Show the tooltip
+                d3.select("#tooltip").classed("hidden", false);
+            });
+          feature
+            .on("mouseout", function() {
+              d3.select(this)
+              .transition()
+              .duration(500)
+              .attr("r", function (d) {
+                if (d.DEATHS == null) {
+                  return 3
+                }
+                else {
+                  return scaleQuantRad(d.DEATHS);
+                }
+              });
+              //Hide the tooltip
+              d3.select("#tooltip").classed("hidden", true);
+            });
+
+       mymap.on("viewreset", reset);
+
+       reset();
+       
+       // Recalculating bounds for redrawing points each time map changes
+      function reset() {
+        var bounds = d3path.bounds(data)
+            topLeft = [bounds[0][0] + 10 , bounds[0][1] - 10]
+            bottomRight = [bounds[1][0] + 10 , bounds[1][1] + 10];
+        // Setting the size and location of the overall SVG container
+        svg_map
+          .attr("width", bottomRight[0] - topLeft[0] )
+          .attr("height", bottomRight[1] - topLeft[1] )
+          .style("left", topLeft[0] + "px")
+          .style("top", topLeft[1]  + "px");
+        g.attr("transform", "translate(" + (-topLeft[0] ) + "," + (-topLeft[1] ) + ")");
+          feature.attr("transform",
+            function(d) {
+              return "translate(" +
+                applyLatLngToLayer(d).x + "," +
+                applyLatLngToLayer(d).y + ")";
+            });
+      }
+
+      //2. Working with the scatter plot
+      //Setting scale parameters
+    	var maxDate = d3.max(data, function(d) { return parseDate(d.start_year)});
+    	var minDate = d3.min(data, function(d) { return parseDate(d.start_year)});
+    	var maxMag  = d3.max(data, function(d) { return d.vei});
+    	var minMag  = d3.min(data, function(d) { return d.vei})
+      maxDate_plus = new Date(maxDate.getTime())// + 300*144000000)
+    	xScale.domain([minDate, maxDate_plus]);
+    	yScale.domain([0, maxMag + 1]);
+      navXScale.domain(xScale.domain())
+      navYScale.domain(yScale.domain())
+		  var dots = focus.append("g");
+      dots.attr("clip-path", "url(#clip)");
+      //Plotting points on the scatter plot
+      selected_dots = dots.selectAll("dot")
+			   .data(data)
+			   .enter()
+			   .append("circle")
+         .attr('class', "dot" )
+         .attr('opacity', 0.9 )
+         .filter(function (d) {return d.vei != null})
+            .attr("cx", function(d) {
+               return xScale(parseDate(d.start_year));
+            })
+            .attr("cy", function(d) {
+               return yScale(d.vei);
+            });
+        plot_points(selected_dots)
+        selected_dots
+          .on("mouseover", function(d) {
+            //Connecting scatter plot with map -> Points hoover on scatter plot will
+            // have the same behavior on map.
+            var xPosition = parseFloat(d3.select(this).attr("cx")) + 75 ;
+            var yPosition = parseFloat(d3.select(this).attr("cy")) + 550;
+            curent_id = d3.select(this)._groups[0][0].__data__.id.toString()
+            d3.selectAll(".mapcircle")
+                .filter(function (d) {return d.id === curent_id ;})
+                .attr('r', 15)
+            d3.select(this)
+                .attr('r', 15)
+          //Update the tooltip position and value
+          tool_tip_show(xPosition + "px", yPosition - 200 + "px", d)
+            //Show the tooltip
+            d3.select("#tooltip").classed("hidden", false);
+            });
+        selected_dots
+          .on("mouseout", function() {
+            //Returning to original characteristics
+              d3.select(this)
+              .transition()
+              .duration(500)
+              .attr("r", function (d) {
+                if (d.DEATHS == null) {
+                  return 3
+                }
+                else {
+                  return scaleQuantRad(d.DEATHS);
+                }
+              })
+              d3.selectAll(".mapcircle")
+                .filter(function (d) {return d.id === curent_id ;})
+                .transition()
+                .duration(500)
+                .attr("r", function (d) {
+                  if (d.DEATHS == null) {
+                    return 3
+                  }
+                  else {
+                    return scaleQuantRad(d.DEATHS);
+                  }
+                })
+            //Hide the tooltip
+            d3.select("#tooltip").classed("hidden", true);
+            });
+      // //Adding Axis
+      focus.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+      focus.append("g")
+        .attr("class", "axis axis--y")
+        .call(yAxis);
+    // 3. Plotting navigation chart
+      var dots = context.append("g");
+      dots.attr("clip-path", "url(#clip)");
+    //Plotting the dots
+      small_points = dots.selectAll("dot")
+        .data(data)
+        .enter()
+        .append("circle")
+        .attr('class', 'dotContext')
+        .filter(function (d) {return d.vei != null})
+        .attr("cx", function(d) {
+          return navXScale(parseDate(d.start_year));
+        })
+        .attr("cy", function(d) {
+          return navYScale(d.vei);
+        });
+       plot_points(small_points, 3, 3)
+        context.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + height2 + ")")
+          .call(navXAxis);
+        context.append("g")
+          .attr("class", "brush")
+          .call(brush)
+          .call(brush.move, xScale.range());
+    	});
+      function brushed() {
+        //Function that updates scatter plot and map each time brush is used
+            var s = d3.event.selection || navXScale.range();
+            xScale.domain(s.map(navXScale.invert, navXScale));
+            focus.selectAll(".dot")
+              .filter(function (d) {return d.vei != null})
+              .attr("cx", function(d) {
+                  return xScale(parseDate(d.start_year));
+              })
+              .attr("cy", function(d) {
+                  return yScale(d.vei);
+              })
+            focus.select(".axis--x").call(xAxis);
+               if (d3.event.type == "end") {
+                  curr_points_view = change_map_points()
+                  }
+          }
+      function change_map_points () {
+        //Function that plots points on map after a selection with map has been made.
+        var curr_view_erth = []
+          d3.selectAll(".dot").each(
+            function(d, i) {
+              if (parseDate(d.start_year) >= xScale.domain()[0] && parseDate(d.start_year) <= xScale.domain()[1] ) {
+                curr_view_erth.push(d.id.toString());
+                }})
+          map_points_change = d3.selectAll(".mapcircle")
+            .filter(function(d) {return curr_view_erth.indexOf(d.id) != -1;} )
+            .attr('r', 10)
+            .transition()
+            .duration(1200);
+          plot_points(map_points_change)
+          d3.selectAll(".mapcircle")
+            .filter(function(d) {return curr_view_erth.indexOf(d.id) == -1;} )
+            .transition()
+            .duration(1250)
+            .attr('r', 0 )
+            }
+    function plot_points(selection, rescale_null = 1, rescale_val = 1) {
+      // Helper function for plotting points.
+        selection
+            .attr("r", function (d) {
+              if (d.vei === null) {
+                return 3 / rescale_null;
+              }
+              else {
+                return scaleQuantRad(d.vei) / rescale_val ;
+              }
+            })
+            .attr('fill', function (d) {
+              if (d.vei === null) {
+                  return "#867E7E"
+                  }
+                else {
+                  return scaleQuantColor(d.DEATHS);
+                }
+              })
+            }
+    function tool_tip_show(left, rigth, d) {
+    //Helper function for including information tool_tip
+      tooltip
+        .style("left", left)
+        .style("top", rigth)
+        .select("#magnitude")
+        .text("Magnitude: " + d.vei)
+        tooltip
+          .select("#date")
+          .text("Date: " + d.start_year)
+        // if (d.DEATHS == null) {
+        //     tooltip
+        //       .select("#deaths")
+        //       .text("Deaths: No entry" )
+        //       } else {
+        //     tooltip
+        //       .select("#deaths")
+        //       .text("Deaths: " + d.DEATHS)
+        //       }
+        if (d.country === null) {
+          tooltip
+            .select("#country")
+            .text("Country: No entry" )
+            } else {
+          tooltip
+            .select("#country")
+            .text("Country: " + d.country)
+            }
+      }
+
+      //// Adding Earthquake Data 
+        var latlngArray = [];
+        var veiArray = []; //true vei number for pop up info
+        var placeArray = [];
+        var timeArray = [];
+        var volcanoMarker = [];
+        var vei_radii = []; // this is the radii value to address NaN values
+        var nameArray = [];
+      
+        // for (var i = 0; i < data.length; i++) {
+        //   var volcanoData = data[i];
+      
+        //   var lat = volcanoData.latitude;
+        //   var lng = volcanoData.longitude;
+        //   var vei = volcanoData.vei;
+        //   var place = volcanoData.country;
+        //   var name = volcanoData.volcano_name;
+        //   var utcTime = new Date(volcanoData.start_year,'',1); //, getMonth(volcanoData.start_month), getDay(volcanoData.start_day));
+        //   var strUTCtime = utcTime.toDateString()
+          
+        //   console.log("utcTime", strUTCtime)
+        //   // Latitude is in the range -90 (S) and +90 (N)
+        //   // Longitude is in the range -180 (W) and +180 (E)
+        //   if (location, vei, place, strUTCtime) {
+        //     latlngArray.push([lat, lng]);
+        //     nameArray.push(name);
+        //     veiArray.push(vei);
+        //     vei_radii.push(getNum(vei)+1)
+        //     placeArray.push(place);
+        //     timeArray.push(strUTCtime);
+        //   }
+        // }
+      
+      // var n = data.length; // sample size to assess
+      // for (var j = 0; j < n; j++) {
+      //   volcanoMarker.push(
+      //     L
+      //     .circleMarker(latlngArray[j], {
+      //       fillOpacity: 0.25,
+      //       color: getColor(vei_radii[j]),
+      //       fillColor: getColor(vei_radii[j]),
+      //       // Setting our circle's radius equal to the output of our markerSize function
+      //       // This will make our marker's size proportionate to its population
+      //       radius: (1.5 ** vei_radii[j]),
+      //       time: (timeArray[j])      
+      //     })
+      //     .bindPopup("<div class='popup_info'>" + nameArray[j] + 
+      //       "<hr>VEI: " + veiArray[j] + "<br>Country: " + placeArray[j] +
+      //       "</div>")
+      //   );
+      // }
+      
+      var volcanoes = L.layerGroup(volcanoMarker);
+      
+      //// Legend Control
+      var legend = L.control({position: 'bottomright'});
+      
+      legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend'),
+            veiBin = [0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+            labels = [', Effusive',', Gentle',', Explosive',
+              ', Catastrophic',', Cataclysmic',', Paroxysmic',
+              ', Colossal',', Super-colossal',', Mega-colossal'];
+      
+        div.innerHTML += '<b>Volcanic <br> Eruptions & VEI</b><hr>'  // don't forget the break tag
+      
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < veiBin.length; i++) {
+            div.innerHTML += 
+                '<i style="background:' + getColor(veiBin[i] + 1) + ' "></i> ' +
+                veiBin[i] + (veiBin[i + 1] ? '&ndash;' + veiBin[i + 1] + labels[i] + '<br>' : labels[i]) ;
+        }
+        return div;
+      };
+      
+      //////////////////////////////////////////////////////////////////////
+      var source = "https://raw.githubusercontent.com/joshbooya/tectonicplates/master/GeoJSON/PB2002_plates.json";
+      
+      d3.json(source, function(data) {
+      
+      function getStyle(feature) {
+        return {
+          weight: 3,
+          opacity: 0.25,
+          color: 'crimson',
+          dashArray: '5',
+          fillOpacity: 0,
+          fillColor: ''
+        };
+      }
+      
+      function highlightFeature(e) {
+        var layer = e.target;
+    
+        layer.setStyle({
+          weight: 8,
+          opacity: 1,
+          color: 'white',
+          dashArray: '1',
+          fillOpacity: 0
+        });
+    
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+        info.update(layer.feature);
+      }
+      
+      function resetHighlight(e) {
+        plates.resetStyle(e.target);
+        info.update();
+      }
+      
+      // function zoomToFeature(e) {
+      //     map.fitBounds(e.target.getBounds());
+      // }
+      
+      function onEachFeature(feature, layer) {
+        layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            // click: zoomToFeature
+          });
+      }
+      
+      //// Plate info
+      var info = L.control({position: 'bottomleft'});
+      
+      info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'plate_info'); // create a div with a class "info"
+        this.update();
+        return this._div;
+      };
+      
+      // method that we will use to update the control based on feature passed
+      info.update = function (props) {
+        this._div.innerHTML = (props ? props.PlateName + ' Plate': 'Hover over a plate');
+      };
+      
+      var plates = L.geoJson(data, {
+        style: getStyle
+        , onEachFeature: onEachFeature   
+      });
+      
+      var baseMaps = {
+        "Satellite": satellite,
+        "Outdoor": outdoor,
+        "Dark": dark,
+        "Light": light
+      };
+      
+      var overlayMaps = {
+        "Volcanoes": volcanoes,
+        "Plate Tectonics": plates
+      };
+      
+      // Adding slider for earthquake data
+      var sliderControl = 
+        L.control.sliderControl({
+          position: "bottomright", 
+          layer: volcanoes, 
+          follow: 10});
+
+      mymap.addControl(sliderControl);
+      sliderControl.startSlider();
+      
+      var imperial_scale = L.control.scale({position: 'bottomleft'})
+      
+      // Add to map
+      L.control.layers(baseMaps, overlayMaps, {
+        }).addTo(mymap);
+
+      imperial_scale.addTo(mymap);
+      legend.addTo(mymap);
+      info.addTo(mymap);
+      
+      });
+    </script>
+  </body>
+</html>

@@ -1,2 +1,0 @@
-# volcanoes
-# volcano-app
